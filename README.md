@@ -26,7 +26,7 @@ The default RTL parameters are `ADDR_WIDTH=8` and `DATA_WIDTH=32`.
 | `tb/tb_axi_lite_2x2_interconnect.sv` | Self-checking RTL testbench with target memory models and directed concurrency tests |
 | `tb/assertions/axi_lite_channel_assertions.sv` | Assertions for VALID/payload stability while stalled |
 | `tb/uvm/` | UVM item, two master agents, drivers/monitors, directed and constrained-random sequences, target models, environment, scoreboard, and functional coverage |\n| `docs/validation_report.md` | Latest passing RTL run, tested commit, log/VCD artifact link, and limitations |
-| `scripts/run_verilator_smoke.sh` | Reproducible local Verilator regression with waveform tracing |
+| `scripts/run_verilator_smoke.sh` | Reproducible local Verilator regression with waveform tracing |\n| `scripts/run_fault_injection.sh` | Injects a temporary read-data corruption and proves the checker catches it |
 | `scripts/run_xcelium_uvm.sh` | Optional UVM run script for a machine with Cadence Xcelium and UVM |
 | `.github/workflows/rtl-smoke.yml` | CI compile, simulation, and artifact upload |
 
@@ -55,7 +55,7 @@ The script compiles with timing, trace, and assertion support; runs the testbenc
 
 GitHub Actions runs this regression on pushes and pull requests. Open the [workflow runs](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/workflows/rtl-smoke.yml) and download the `axi-lite-smoke-evidence` artifact to inspect the actual log and VCD waveform. Artifacts are retained for 30 days by the workflow.
 
-## Latest proof\n\nThe latest recorded RTL regression passed in [GitHub Actions run #36](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/runs/39967619212). Download the [simulation log and VCD waveform artifact](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/runs/39967619212/artifacts/12507267948). The detailed validation notes are in [`docs/validation_report.md`](docs/validation_report.md).\n\n## UVM environment
+## Latest proof\n\nThe latest recorded CI run [#46](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/runs/39968119386) passed both the RTL regression and fault-injection negative control. Download the [simulation log/VCD artifact](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/runs/39968119386/artifacts/12506838888) and [fault-injection log](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/runs/39968119386/artifacts/12506838889). Detailed evidence and limitations are in [`docs/validation_report.md`](docs/validation_report.md).\n\n## UVM environment
 
 The `tb/uvm/` directory contains a UVM environment with two master agents, directed transactions, a constrained-random phase (20 items per master), monitors, a reference-memory scoreboard, and transaction functional coverage. Random traffic uses disjoint word-index ranges per master to avoid artificial cross-master data races while exercising both targets. To run it, use a supported Cadence Xcelium installation:
 
