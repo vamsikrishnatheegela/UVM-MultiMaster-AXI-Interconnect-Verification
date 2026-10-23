@@ -103,17 +103,17 @@ module axi_lite_2x2_interconnect #(
             if (!wr_active[t]) begin
                 if (wr_rr[t] == 1'b0) begin
                     if (m_awvalid[0] && !wr_busy[0] &&
-                        (m_awaddr[0][ADDR_WIDTH-1] == t))
+                        (m_awaddr[0][ADDR_WIDTH-1] == (t != 0)))
                         selected = 0;
                     else if (m_awvalid[1] && !wr_busy[1] &&
-                             (m_awaddr[1][ADDR_WIDTH-1] == t))
+                             (m_awaddr[1][ADDR_WIDTH-1] == (t != 0)))
                         selected = 1;
                 end else begin
                     if (m_awvalid[1] && !wr_busy[1] &&
-                        (m_awaddr[1][ADDR_WIDTH-1] == t))
+                        (m_awaddr[1][ADDR_WIDTH-1] == (t != 0)))
                         selected = 1;
                     else if (m_awvalid[0] && !wr_busy[0] &&
-                             (m_awaddr[0][ADDR_WIDTH-1] == t))
+                             (m_awaddr[0][ADDR_WIDTH-1] == (t != 0)))
                         selected = 0;
                 end
             end
@@ -161,17 +161,17 @@ module axi_lite_2x2_interconnect #(
             if (!rd_active[t]) begin
                 if (rd_rr[t] == 1'b0) begin
                     if (m_arvalid[0] && !rd_busy[0] &&
-                        (m_araddr[0][ADDR_WIDTH-1] == t))
+                        (m_araddr[0][ADDR_WIDTH-1] == (t != 0)))
                         selected = 0;
                     else if (m_arvalid[1] && !rd_busy[1] &&
-                             (m_araddr[1][ADDR_WIDTH-1] == t))
+                             (m_araddr[1][ADDR_WIDTH-1] == (t != 0)))
                         selected = 1;
                 end else begin
                     if (m_arvalid[1] && !rd_busy[1] &&
-                        (m_araddr[1][ADDR_WIDTH-1] == t))
+                        (m_araddr[1][ADDR_WIDTH-1] == (t != 0)))
                         selected = 1;
                     else if (m_arvalid[0] && !rd_busy[0] &&
-                             (m_araddr[0][ADDR_WIDTH-1] == t))
+                             (m_araddr[0][ADDR_WIDTH-1] == (t != 0)))
                         selected = 0;
                 end
             end
