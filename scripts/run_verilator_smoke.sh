@@ -23,6 +23,7 @@ mkdir -p build/verilator
     -Wall -Wno-fatal \
     --Mdir build/verilator \
     rtl/axi_lite_2x2_interconnect.sv \
+    tb/assertions/axi_lite_channel_assertions.sv \
     tb/tb_axi_lite_2x2_interconnect.sv
   echo "=== Run ==="
   ./build/verilator/Vtb_axi_lite_2x2_interconnect +TRACE
