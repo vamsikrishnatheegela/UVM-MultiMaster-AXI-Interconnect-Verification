@@ -15,6 +15,7 @@ class axi_lite_master_driver extends uvm_driver #(axi_lite_item);
 
     task run_phase(uvm_phase phase);
         axi_lite_item req;
+        wait (vif.aresetn === 1'b1);
         @(negedge vif.aclk);
         vif.awvalid = 1'b0;
         vif.wvalid  = 1'b0;
