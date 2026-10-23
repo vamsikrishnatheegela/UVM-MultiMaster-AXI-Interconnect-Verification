@@ -1,0 +1,9 @@
+build/
+work/
+*.vcd
+*.fst
+*.log
+*.wlf
+*.shm/
+*.dsn
+*.key
