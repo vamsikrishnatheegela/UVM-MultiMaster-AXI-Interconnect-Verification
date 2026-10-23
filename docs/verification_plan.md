@@ -23,7 +23,7 @@ The self-checking testbench is `tb/tb_axi_lite_2x2_interconnect.sv`. It contains
 
 ## UVM environment
 
-`tb/uvm/` contains transaction items, two master agents with drivers and monitors, a test environment, directed sequences, a target model, a reference-memory scoreboard, and transaction covergroups. Run the UVM test using Cadence Xcelium via `scripts/run_xcelium_uvm.sh` on a licensed environment. A UVM result is not considered validated until the simulator run completes and the scoreboard summary is reviewed.
+`tb/uvm/` contains transaction items, two master agents with drivers and monitors, a test environment, directed transactions, a constrained-random phase of 20 transactions per master, target models, a reference-memory scoreboard, and transaction covergroups. The UVM driver also deliberately holds BREADY/RREADY low for two clock edges to exercise response stability while stalled. Random transactions use disjoint word-index ranges per master to avoid artificial cross-master data races. Run the UVM test using Cadence Xcelium via `SEED=42 bash scripts/run_xcelium_uvm.sh` on a licensed environment. The seed is passed to Xcelium and logged for reproducibility. A UVM result is not considered validated until the simulator run completes and the scoreboard summary is reviewed.
 
 ## Checker principles
 
