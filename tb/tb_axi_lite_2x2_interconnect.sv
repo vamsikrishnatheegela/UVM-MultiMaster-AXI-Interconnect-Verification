@@ -113,6 +113,26 @@ module tb_axi_lite_2x2_interconnect;
         .DATA_WIDTH(DATA_WIDTH)
     ) dut (.*);
 
+
+    for (genvar g = 0; g < 2; g++) begin : MASTER_ASSERTIONS
+        axi_lite_channel_assertions master_checker (
+            .aclk(aclk), .aresetn(aresetn),
+            .awvalid(m_awvalid[g]), .awready(m_awready[g]), .awaddr(m_awaddr[g]), .awprot(m_awprot[g]),
+            .wvalid(m_wvalid[g]), .wready(m_wready[g]), .wdata(m_wdata[g]), .wstrb(m_wstrb[g]),
+            .bvalid(m_bvalid[g]), .bready(m_bready[g]), .bresp(m_bresp[g]),
+            .arvalid(m_arvalid[g]), .arready(m_arready[g]), .araddr(m_araddr[g]), .arprot(m_arprot[g]),
+            .rvalid(m_rvalid[g]), .rready(m_rready[g]), .rdata(m_rdata[g]), .rresp(m_rresp[g])
+        );
+        axi_lite_channel_assertions target_checker (
+            .aclk(aclk), .aresetn(aresetn),
+            .awvalid(s_awvalid[g]), .awready(s_awready[g]), .awaddr(s_awaddr[g]), .awprot(s_awprot[g]),
+            .wvalid(s_wvalid[g]), .wready(s_wready[g]), .wdata(s_wdata[g]), .wstrb(s_wstrb[g]),
+            .bvalid(s_bvalid[g]), .bready(s_bready[g]), .bresp(s_bresp[g]),
+            .arvalid(s_arvalid[g]), .arready(s_arready[g]), .araddr(s_araddr[g]), .arprot(s_arprot[g]),
+            .rvalid(s_rvalid[g]), .rready(s_rready[g]), .rdata(s_rdata[g]), .rresp(s_rresp[g])
+        );
+    end
+
     always #5 aclk = ~aclk;
 
     task automatic axi_write(
