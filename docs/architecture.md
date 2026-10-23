@@ -2,48 +2,42 @@
 
 ## Purpose
 
-The DUT connects two independent AXI masters to two memory-mapped targets. This small 2x2 topology is intended to exercise concurrency and cross-interface behavior in a reusable verification environment.
+The DUT is a 2-master / 2-target AXI4-Lite interconnect implemented in `rtl/axi_lite_2x2_interconnect.sv`. It is a focused verification project for arbitration, independent AXI-Lite channels, response routing, and concurrent traffic.
 
-## Conceptual topology
+## Interface and supported subset
 
-```text
- Master 0 ----+                       +---- Target 0
-              |   +---------------+   |
-              +-->|               |---+
-                  | AXI            |
-                  | Interconnect   |
-              +-->|               |---+
- Master 1 ----+   +---------------+   +---- Target 1
-```
+- AXI4-Lite read and write channels.
+- Default 8-bit address and 32-bit data widths, configurable through parameters.
+- Byte write strobes.
+- No AXI4 bursts or transaction IDs.
+- One outstanding read and one outstanding write per master.
+- One active read and one active write per target.
+- Address MSB selects the destination: `0` routes to target 0; `1` routes to target 1.
 
-## Planned blocks
+## Functional blocks
 
-- **Address decoder:** Maps legal addresses to exactly one target; defines behavior for unmapped addresses. Configured regions must not overlap.
-- **Arbitration:** Chooses among competing eligible masters according to a documented policy. Round-robin is a reasonable initial policy, subject to the final specification.
-- **Request routing:** Routes address and write-data channels while preserving channel handshake behavior. Address and data channels must not be assumed to handshake in the same cycle.
-- **Response routing:** Returns read and write responses to the requesting master. If IDs and multiple outstanding requests are supported, sufficient routing state must be retained.
-- **Target models:** Two independently controlled targets that can introduce wait states and return selected response codes.
+### Address routing
+The most significant address bit selects one of the two target ports. The current design assumes the address space is divided by that bit; it does not implement an unmapped-address DECERR path.
 
-## Specification decisions before RTL completion
+### Arbitration
+AW and AR requests are arbitrated independently per target. A round-robin preference bit changes after an accepted address request. Requests from a master that already has an outstanding transaction in that direction are not eligible.
 
-1. Exact AXI profile/version and supported subset.
-2. Address width, data width, ID width, and address map.
-3. Supported burst types, transfer sizes, and burst boundary rules.
-4. Whether IDs and multiple outstanding transactions are supported.
-5. Whether read and write arbitration operate independently.
-6. Arbitration policy and fairness assumptions.
-7. Reset polarity/synchrony and handling of outstanding transactions.
-8. Unmapped-address and target-error behavior.
-9. Maximum outstanding request count and any deliberate restrictions.
+### Write channel
+AW and W handshakes are independent. After a target accepts AW, the interconnect stores the originating master and routes W data/strobes from that owner. The B response is routed back to the same master after the W channel has completed. The current subset allows only one active write per target.
 
-## Intended invariants
+### Read channel
+After a target accepts AR, the interconnect stores the originating master. R data and response are routed back to that master until the response handshake completes. The current subset allows one active read per target.
 
-- Each accepted request is routed only to the target selected by the address map.
-- Responses return to the correct source master.
-- Accepted transactions are neither lost nor duplicated.
-- Response matching obeys the supported ordering and ID rules.
-- VALID/payload/READY behavior obeys the selected AXI requirements.
-- Arbitration chooses only eligible requesters and satisfies the documented policy.
-- Reset behavior matches the explicit reset contract and does not misroute stale responses.
+## Key verification invariants
 
-These are design intents. Final properties must be written against the actual signal-level interface and frozen specification.
+- Only one selected master drives each target address channel at a time.
+- An accepted write address establishes ownership for subsequent write data and response routing.
+- An accepted read address establishes ownership for the corresponding read response.
+- Master request payloads must remain stable while VALID is asserted and READY is low.
+- Byte strobes update only the selected byte lanes in the target model.
+- Simultaneous requests to different targets can make progress independently.
+- Contending requests to the same target must not be lost.
+
+## Deliberate limitations
+
+This is not a full AXI4 interconnect. It does not support bursts, IDs, multiple outstanding transactions per master, address remapping, or a DECERR path for unmapped addresses. These limitations are explicit so verification claims match the implemented design.
