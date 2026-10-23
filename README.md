@@ -1,81 +1,79 @@
-# UVM-Based Multi-Master AXI Interconnect Verification
+# UVM-Based Multi-Master AXI4-Lite Interconnect Verification
 
-A coverage-driven SystemVerilog/UVM project to verify a small multi-master AXI interconnect, emphasizing concurrent traffic, arbitration, request/response routing, backpressure, transaction integrity, and reset recovery.
+A SystemVerilog project verifying a **2-master / 2-target AXI4-Lite interconnect**. The repository combines synthesizable RTL, a self-checking RTL regression, protocol assertions, a UVM environment, functional coverage, and automated GitHub Actions evidence.
 
-> **Status:** Initial project scaffold. RTL, UVM components, tests, and coverage metrics will be marked complete only after implementation and simulation.
+[![RTL Smoke Regression](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/workflows/rtl-smoke.yml/badge.svg)](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/workflows/rtl-smoke.yml)
 
-## Objectives
+> **Scope clarification:** This is AXI4-Lite, not full AXI4. AXI4 burst transfers and transaction IDs are not implemented. The RTL allows one outstanding read and one outstanding write per master and one active transaction per target in each direction.
 
-- Specify a manageable AXI4 subset for a 2-master / 2-target interconnect.
-- Exercise concurrent read/write traffic and competing requests.
-- Check address decode, arbitration, response routing, and transaction integrity.
-- Build reusable UVM agents, monitors, sequences, a reference model, and scoreboard.
-- Add assertions, functional coverage, and reproducible regression tests.
-- Document known limitations and real results without inventing coverage or pass-rate claims.
+## Architecture
 
-## Planned topology
+- Two independent AXI4-Lite master interfaces.
+- Two target interfaces with independent read and write paths.
+- Per-target round-robin arbitration for AW and AR requests.
+- Address routing based on the most significant address bit: `0` selects target 0 and `1` selects target 1.
+- Write-data routing follows the accepted AW owner; B responses return to that owner after W completion.
+- Read responses return to the master that issued the accepted AR request.
+- 32-bit data and byte write strobes.
 
-Two independent AXI masters connect through an interconnect to two memory-mapped targets. The interconnect contains address decode, arbitration, request routing, and response routing. Target models will support independently configurable latency and response behavior.
+The default RTL parameters are `ADDR_WIDTH=8` and `DATA_WIDTH=32`.
 
-## Planned repository layout
+## Implemented files
 
-```text
-.
-├── README.md
-├── docs/
-│   ├── architecture.md
-│   ├── verification_plan.md
-│   └── coverage_plan.md
-├── rtl/
-├── tb/
-│   ├── interfaces/
-│   ├── agents/
-│   ├── env/
-│   ├── sequences/
-│   ├── tests/
-│   ├── assertions/
-│   └── scoreboard/
-├── sim/
-└── scripts/
+| Path | Purpose |
+|---|---|
+| `rtl/axi_lite_2x2_interconnect.sv` | Interconnect RTL |
+| `tb/tb_axi_lite_2x2_interconnect.sv` | Self-checking RTL testbench with target memory models and directed concurrency tests |
+| `tb/assertions/axi_lite_channel_assertions.sv` | Assertions for VALID/payload stability while stalled |
+| `tb/uvm/` | UVM item, master agent/driver/monitor, sequences, target model, environment, scoreboard, and test |
+| `scripts/run_verilator_smoke.sh` | Reproducible local Verilator regression with waveform tracing |
+| `scripts/run_xcelium_uvm.sh` | Optional UVM run script for a machine with Cadence Xcelium and UVM |
+| `.github/workflows/rtl-smoke.yml` | CI compile, simulation, and artifact upload |
+
+## RTL regression coverage
+
+The directed regression currently exercises:
+
+1. Master 0 write/read through target 0.
+2. Master 1 write/read through target 1.
+3. Byte-strobe behavior, including preservation of untouched bytes.
+4. Concurrent writes to different targets.
+5. Two masters contending for target 0, followed by independent readback checks.
+6. Simultaneous read requests contending for target 0.
+
+The testbench prints `ALL TESTS PASSED: AXI4-Lite 2x2 smoke regression` only after all directed checks complete. It can generate `results/axi_lite_smoke.vcd` for waveform inspection.
+
+## Reproduce the RTL evidence
+
+With Verilator installed:
+
+```bash
+bash scripts/run_verilator_smoke.sh
 ```
 
-## Planned high-value scenarios
+The script compiles with timing, trace, and assertion support; runs the testbench; and checks for the pass marker. It writes `results/verilator_smoke.log` and, when tracing is enabled, `results/axi_lite_smoke.vcd`.
 
-- Both masters request the same target concurrently.
-- Masters access different targets at the same time.
-- Independent backpressure on read/write channels.
-- Variable target response delays.
-- Address-map boundaries and unmapped addresses.
-- Burst length/boundary cases for the supported subset.
-- Multiple outstanding requests and ID matching, if supported.
-- Reset during idle, active transfer, and delayed response.
-- Error response propagation and recovery.
-- Constrained-random traffic with reproducible seeds.
-- Deliberate defects injected into separate RTL variants to validate checkers.
+GitHub Actions runs this regression on pushes and pull requests. Open the [workflow runs](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/workflows/rtl-smoke.yml) and download the `axi-lite-smoke-evidence` artifact to inspect the actual log and VCD waveform. Artifacts are retained for 30 days by the workflow.
 
-## Implementation roadmap
+## UVM environment
 
-1. Freeze the AXI profile, widths, address map, burst/ID/outstanding behavior, arbitration policy, and reset contract.
-2. Implement and lint synthesizable RTL.
-3. Add target models and directed smoke tests.
-4. Build UVM agents, monitors, sequences, reference model, and scoreboard.
-5. Add protocol assertions and functional coverage.
-6. Run directed and constrained-random regressions; record simulator/version/seeds.
-7. Perform fault injection and document detected defects.
+The `tb/uvm/` directory contains a UVM-based environment with two master agents, directed sequences, monitors, a reference-memory scoreboard, and transaction functional coverage. To run it, use a supported Cadence Xcelium installation:
 
-## Tools
+```bash
+bash scripts/run_xcelium_uvm.sh
+```
 
-SystemVerilog and UVM with a simulator supporting the selected UVM release (for example, Cadence Xcelium where available). Exact compile/run commands will be added after validation against the chosen simulator.
+This proprietary-simulator UVM run is separate from the Verilator RTL regression. Do not treat the UVM environment as simulator-validated until it has been run successfully with Xcelium; record the simulator/UVM version and scoreboard summary when doing so.
 
-## Current status
+## Known limitations and next steps
 
-- [x] Repository and initial project plan
-- [ ] Detailed AXI subset specification
-- [ ] Interconnect RTL and target models
-- [ ] UVM environment and reusable agents
-- [ ] Reference model and scoreboard
-- [ ] Assertions and functional coverage
-- [ ] Simulator-validated regression
-- [ ] Fault-injection report
+- AXI4-Lite subset only; no bursts or transaction IDs.
+- One outstanding transaction per master per direction.
+- Target model is a simple memory-mapped model; latency/backpressure stress and error responses need expanded tests.
+- Functional coverage exists in the UVM scoreboard; a measured coverage report should be captured from a real UVM run.
+- Add negative fault-injection experiments and document which checker detects each defect.
+- Consider formal checks for arbitration fairness and channel invariants.
 
-**No simulation results or coverage percentages are claimed yet.**
+## Evidence policy
+
+Simulation logs and waveforms are generated by actual CI/local runs. No simulation output, UVM pass claim, or coverage percentage is fabricated or inferred from a successful compile.
