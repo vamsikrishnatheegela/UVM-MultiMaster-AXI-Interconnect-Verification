@@ -63,6 +63,8 @@ class axi_lite_master_driver extends uvm_driver #(axi_lite_item);
         if (!aw_done || !w_done)
             `uvm_fatal("AW_W_TIMEOUT", $sformatf("Write request timeout addr=0x%02h", tr.addr))
 
+        // Keep BREADY low briefly so response stability assertions are exercised.
+        repeat (2) @(negedge vif.aclk);
         vif.bready = 1'b1;
         cycles = 0;
         while (!b_done && cycles < 256) begin
@@ -104,6 +106,8 @@ class axi_lite_master_driver extends uvm_driver #(axi_lite_item);
         if (!ar_done)
             `uvm_fatal("AR_TIMEOUT", $sformatf("Read address timeout addr=0x%02h", tr.addr))
 
+        // Keep RREADY low briefly so response stability assertions are exercised.
+        repeat (2) @(negedge vif.aclk);
         vif.rready = 1'b1;
         cycles = 0;
         while (!r_done && cycles < 256) begin
