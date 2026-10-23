@@ -40,11 +40,7 @@ module axi_lite_2x2_smoke_tb;
     m_awready = '0;
     m_wready = '0;
     m_bresp = '0;
-    m_bvalid = '0;
     m_arready = '0;
-    m_rdata = '0;
-    m_rresp = '0;
-    m_rvalid = '0;
     for (integer j = 0; j < 2; j = j + 1) begin
       m_awready[j] = !aw_seen[j] && !m_bvalid[j];
       m_wready[j] = !w_seen[j] && !m_bvalid[j];
@@ -83,11 +79,14 @@ module axi_lite_2x2_smoke_tb;
         for (integer y = 0; y < 16; y = y + 1)
           mem[x][y] <= '0;
     end else begin
+      aw_count <= aw_count + (m_awvalid[0] && m_awready[0]) + (m_awvalid[1] && m_awready[1]);
+      ar_count <= ar_count + (m_arvalid[0] && m_arready[0]) + (m_arvalid[1] && m_arready[1]);
+      b_count <= b_count + (m_bvalid[0] && m_bready[0]) + (m_bvalid[1] && m_bready[1]);
+      r_count <= r_count + (m_rvalid[0] && m_rready[0]) + (m_rvalid[1] && m_rready[1]);
       for (integer j = 0; j < 2; j = j + 1) begin
         if (m_awvalid[j] && m_awready[j]) begin
           aw_seen[j] <= 1'b1;
           awaddr_q[j] <= m_awaddr[j];
-          aw_count <= aw_count + 1;
         end
         if (m_wvalid[j] && m_wready[j]) begin
           w_seen[j] <= 1'b1;
@@ -108,16 +107,13 @@ module axi_lite_2x2_smoke_tb;
         end
         if (bvalid_q[j] && m_bready[j]) begin
           bvalid_q[j] <= 1'b0;
-          b_count <= b_count + 1;
         end
         if (m_arvalid[j] && m_arready[j]) begin
           rdata_q[j] <= mem[j][m_araddr[j][5:2]];
           rvalid_q[j] <= 1'b1;
-          ar_count <= ar_count + 1;
         end
         if (rvalid_q[j] && m_rready[j]) begin
           rvalid_q[j] <= 1'b0;
-          r_count <= r_count + 1;
         end
       end
     end
