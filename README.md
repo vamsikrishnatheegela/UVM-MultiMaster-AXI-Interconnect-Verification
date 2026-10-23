@@ -45,7 +45,7 @@ The directed regression currently exercises:
 7. B/R response backpressure to exercise response-stability assertions.
 8. A negative-control fault-injection run that corrupts read data in a temporary RTL copy and expects the testbench to detect the mismatch.
 
-The testbench prints `ALL TESTS PASSED: AXI4-Lite 2x2 smoke regression` only after all directed checks complete. It can generate `results/axi_lite_smoke.vcd` for waveform inspection.
+The testbench prints `ALL TESTS PASSED: AXI4-Lite 2x2 smoke regression` only after all directed checks complete. It can generate `results/axi_lite_smoke.vcd` for waveform inspection. Open a local waveform with `gtkwave results/axi_lite_smoke.vcd` when GTKWave is installed.
 
 ## Reproduce the RTL evidence
 
@@ -80,7 +80,7 @@ This proprietary-simulator UVM run is separate from the Verilator RTL regression
 - One outstanding transaction per master per direction.
 - Target model is a simple memory-mapped model; latency/backpressure stress and error responses need expanded tests.
 - Functional coverage exists in the UVM scoreboard; a measured coverage report should be captured from a real UVM run.
-- Add negative fault-injection experiments and document which checker detects each defect.
+- Expand fault injection beyond the implemented read-data bit-flip to response misrouting and arbitration defects.
 - Consider formal checks for arbitration fairness and channel invariants.
 
 ## Evidence policy
