@@ -7,3 +7,11 @@ work/
 *.shm/
 *.dsn
 *.key
+
+# Local simulation results and generated artifacts
+results/modelsim/
+results/*.log
+results/*.vcd
+results/*.fst
+core
+core.*
