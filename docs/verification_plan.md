@@ -2,49 +2,45 @@
 
 ## Goals
 
-Verify routing, arbitration, channel handshakes, response association, reset recovery, and error behavior against a frozen design specification. The reference model must be independent of the DUT implementation.
+Verify the supported 2-master / 2-target AXI4-Lite subset: address arbitration, independent AW/W handshakes, write ownership, response routing, read routing, byte strobes, and concurrent requests.
 
-## Planned environment components
+## Existing RTL regression
 
-- **Sequence item:** Describes a read/write transaction, address, burst attributes, and write data.
-- **Sequences:** Directed scenarios and constrained-random traffic.
-- **Driver:** Drives the interface according to the supported AXI protocol.
-- **Monitor:** Observes accepted requests and responses without driving the DUT.
-- **Target model:** Accepts requests and generates delayed responses and optional errors.
-- **Reference model:** Predicts expected routing and transaction outcomes without relying on DUT internal state.
-- **Scoreboard:** Matches observed transactions to expected outcomes and reports data corruption, loss, duplication, or misrouting.
-- **Assertions:** Check protocol behavior and design invariants.
-- **Coverage collector:** Samples completed behavior and meaningful crosses.
-- **Regression runner:** Executes tests with reproducible random seeds and aggregates results.
+The self-checking testbench is `tb/tb_axi_lite_2x2_interconnect.sv`. It contains two simple target memory models and checks transaction outcomes using tasks that time out if a handshake does not complete.
 
-## Test scenario matrix
+| ID | Scenario | Status in RTL regression | Check |
+|---|---|---|---|
+| RTL-01 | Master 0 accesses target 0 | Implemented | Readback matches written word |
+| RTL-02 | Master 1 accesses target 1 | Implemented | Readback matches written word |
+| RTL-03 | Partial byte write | Implemented | Untouched bytes remain unchanged |
+| RTL-04 | Concurrent writes to different targets | Implemented | Both transactions complete and read back correctly |
+| RTL-05 | Two masters contend for target 0 writes | Implemented | Both writes complete and read back correctly |
+| RTL-06 | Simultaneous read requests to target 0 | Implemented | Both masters receive their expected data |
+| RTL-07 | AXI channel stability while stalled | Assertions instantiated | Verilator assertion-enabled regression |
+| RTL-08 | Randomized response latency/backpressure | Not yet implemented | Add randomized target stalls |
+| RTL-09 | Reset during outstanding work | Not yet implemented | Define reset contract and test it |
+| RTL-10 | Deliberate fault injection | Not yet implemented | Demonstrate checker sensitivity |
 
-| ID | Scenario | Expected checks |
-|---|---|---|
-| V01 | Reset smoke | Clean documented idle state; no spurious response |
-| V02 | Single-master read | Correct target decode and returned data |
-| V03 | Single-master write | Correct destination and write response |
-| V04 | Concurrent requests to different targets | Independent progress where supported |
-| V05 | Both masters contend for one target | Legal arbitration; loser remains handled correctly |
-| V06 | Concurrent read and write traffic | Independent channel behavior as specified |
-| V07 | Target backpressure | No dropped/duplicated accepted transaction |
-| V08 | Different target response delays | Correct response/master/ID association |
-| V09 | Address-map boundaries | Correct target selection or documented error |
-| V10 | Burst tests | Correct supported burst, length, size, and boundary behavior |
-| V11 | Multiple outstanding traffic | Correct matching and ordering, if supported |
-| V12 | Target error response | Correct error propagation and recovery |
-| V13 | Reset during active traffic | Behavior conforms to reset contract; no stale misrouting |
-| V14 | Constrained-random mixed traffic | Scoreboard consistency; coverage collected |
-| V15 | Fault injection | Named checker detects each deliberate defect |
+## UVM environment
 
-## Checker design principles
+`tb/uvm/` contains transaction items, two master agents with drivers and monitors, a test environment, directed sequences, a target model, a reference-memory scoreboard, and transaction covergroups. Run the UVM test using Cadence Xcelium via `scripts/run_xcelium_uvm.sh` on a licensed environment. A UVM result is not considered validated until the simulator run completes and the scoreboard summary is reviewed.
 
-- Compare at observable interface boundaries.
-- Match responses only using fields and ordering guarantees defined by the supported spec.
-- Avoid over-constraining legal AXI behavior.
-- Include seed, simulation time, master, target, transaction ID (if present), address, expected value, and observed value in mismatch reports.
-- Explicitly define treatment of accepted but incomplete work during reset.
+## Checker principles
 
-## Exit criteria
+- The RTL smoke test compares read data with expected values and checks responses/timeouts.
+- The protocol assertion module checks that AXI-Lite VALID and payload remain stable when READY is low.
+- The UVM scoreboard models memory independently from DUT internal state and compares observed reads with its expected contents.
+- Failure messages should include master, address, expected/observed data, and response code where applicable.
 
-A milestone is complete when the relevant tests compile and run, expected-pass tests pass, deliberate negative tests fail for the intended reason, assertion failures are explained, coverage holes are reviewed, and simulator/version/seed/limitations are documented. Numeric coverage goals will be set only after actual covergroups and reports exist.
+## Reproducible evidence
+
+Run locally with `bash scripts/run_verilator_smoke.sh`. CI executes the same script and uploads `results/verilator_smoke.log` and `results/axi_lite_smoke.vcd` as the `axi-lite-smoke-evidence` artifact. Keep the run URL, commit SHA, simulator version, and test summary when presenting results.
+
+## Exit criteria for future milestones
+
+1. Directed tests pass on the selected simulator.
+2. Randomized latency and backpressure tests are added with reproducible seeds.
+3. Reset and error behavior are specified and tested.
+4. UVM scoreboard errors equal zero in a completed Xcelium run.
+5. Functional coverage is reported from an actual UVM run; uncovered bins are reviewed.
+6. At least one injected defect is detected by the intended checker and documented.
