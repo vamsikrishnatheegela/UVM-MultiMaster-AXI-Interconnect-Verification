@@ -62,7 +62,7 @@ GitHub Actions runs this regression on pushes and pull requests. Open the [workf
 
 ## Latest proof
 
-The latest recorded CI run [#46](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/runs/39968119386) passed both the RTL regression and fault-injection negative control. Download the [simulation log/VCD artifact](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/runs/39968119386/artifacts/12506838888) and [fault-injection log](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/runs/39968119386/artifacts/12506838889). Detailed evidence and limitations are in [`docs/validation_report.md`](docs/validation_report.md).
+The latest recorded CI run [#46](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/runs/39968119386) passed both the RTL regression and fault-injection negative control. Download the [simulation log/VCD artifact](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/runs/39968119386/artifacts/12507348601) and [fault-injection log](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/runs/39968119386/artifacts/12506838889). Detailed evidence and limitations are in [`docs/validation_report.md`](docs/validation_report.md).
 
 ## UVM environment
 
