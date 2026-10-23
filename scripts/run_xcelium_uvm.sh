@@ -11,7 +11,7 @@ if ! command -v xrun >/dev/null 2>&1; then
   exit 127
 fi
 
-xrun -64bit -uvm -sv -timescale 1ns/1ps \
+xrun -64bit -uvm -sv -svseed "${SEED}" -timescale 1ns/1ps \
   -f tb/uvm/axi_lite_uvm.f \
   -top tb_axi_lite_uvm \
   -access +rwc \
