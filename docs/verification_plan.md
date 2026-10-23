@@ -19,7 +19,7 @@ The self-checking testbench is `tb/tb_axi_lite_2x2_interconnect.sv`. It contains
 | RTL-07 | AXI channel stability while stalled | Assertions instantiated | Verilator assertion-enabled regression |
 | RTL-08 | Randomized response latency/backpressure | Not yet implemented | Add randomized target stalls |
 | RTL-09 | Reset during outstanding work | Not yet implemented | Define reset contract and test it |
-| RTL-10 | Deliberate fault injection | Not yet implemented | Demonstrate checker sensitivity |
+| RTL-10 | Deliberate fault injection | Implemented as CI negative control | Temporary read-data bit flip must trigger a read-data mismatch |
 
 ## UVM environment
 
@@ -41,6 +41,7 @@ Run locally with `bash scripts/run_verilator_smoke.sh`. CI executes the same scr
 1. Directed tests pass on the selected simulator.
 2. Randomized latency and backpressure tests are added with reproducible seeds.
 3. Reset and error behavior are specified and tested.
-4. UVM scoreboard errors equal zero in a completed Xcelium run.
-5. Functional coverage is reported from an actual UVM run; uncovered bins are reviewed.
-6. At least one injected defect is detected by the intended checker and documented.
+4. At least one injected defect is detected by the intended checker and documented. (A read-data corruption negative control is implemented in CI.)
+5. UVM scoreboard errors equal zero in a completed Xcelium run.
+6. Functional coverage is reported from an actual UVM run; uncovered bins are reviewed.
+7. Expand fault injection to additional defect classes, such as response misrouting and arbitration errors.
