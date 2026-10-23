@@ -133,7 +133,7 @@ module tb_axi_lite_2x2_interconnect;
         );
     end
 
-    always #5 aclk = ~aclk;
+    always #5 aclk <= ~aclk;
 
     task automatic axi_write(
         input integer master,
