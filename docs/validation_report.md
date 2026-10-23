@@ -6,7 +6,7 @@
 
 ### Artifact links
 
-- [RTL simulation log and VCD waveform](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/runs/39968119386/artifacts/12506838888) — use the `axi-lite-smoke-evidence` artifact from the run.
+- [RTL simulation log and VCD waveform](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/runs/39968119386/artifacts/12507348601) — use the `axi-lite-smoke-evidence` artifact from the run.
 - [Fault-injection log](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/runs/39968119386/artifacts/12506838889) — `axi-lite-fault-injection-evidence`.
 - [All workflow runs](https://github.com/vamsikrishnatheegela/UVM-MultiMaster-AXI-Interconnect-Verification/actions/workflows/rtl-smoke.yml).
 
