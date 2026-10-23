@@ -170,6 +170,8 @@ module tb_axi_lite_2x2_interconnect;
             if (!aw_done || !w_done)
                 $fatal(1, "WRITE REQUEST TIMEOUT master=%0d addr=0x%02h", master, addr);
 
+            // Deliberately backpressure the B channel to exercise response stability assertions.
+            repeat (2) @(negedge aclk);
             m_bready[master] = 1'b1;
             cycles = 0;
             while (!b_done && cycles < 200) begin
@@ -215,6 +217,8 @@ module tb_axi_lite_2x2_interconnect;
             if (!ar_done)
                 $fatal(1, "READ ADDRESS TIMEOUT master=%0d addr=0x%02h", master, addr);
 
+            // Deliberately backpressure the R channel to exercise response stability assertions.
+            repeat (2) @(negedge aclk);
             m_rready[master] = 1'b1;
             cycles = 0;
             while (!r_done && cycles < 200) begin
