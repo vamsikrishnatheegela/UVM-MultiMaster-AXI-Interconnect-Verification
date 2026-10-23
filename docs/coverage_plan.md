@@ -1,56 +1,51 @@
 # Functional Coverage Plan
 
-Functional coverage will measure scenario completion rather than just stimulus generation. The planned covergroups must be implemented and compiled in the selected simulator before reporting percentages.
+## Current implementation
 
-## Candidate coverpoints
+The UVM scoreboard in `tb/uvm/axi_lite_scoreboard.svh` defines transaction coverpoints for:
 
-### Transaction attributes
-- Read versus write
-- Master 0 versus Master 1
-- Target 0 versus Target 1
-- Single transfer versus each supported burst type
-- Transfer size and burst length within the supported subset
+- Read versus write.
+- Target 0 versus target 1.
+- Master 0 versus master 1.
+- OKAY versus non-OKAY response.
+- Transaction kind crossed with target.
+- Master crossed with target.
+
+These covergroups are defined in source. A numerical coverage result must only be reported after a successful UVM simulation with a simulator that supports the covergroup implementation.
+
+## Recommended expansion
 
 ### Arbitration and concurrency
-- Contention versus no contention
-- Winning requester under contention
-- Simultaneous requests from both masters
-- Masters accessing different targets concurrently
-- Read/write overlap if independently supported
+- Both masters requesting the same target in overlapping cycles.
+- Both masters accessing different targets concurrently.
+- Which master wins each contention event.
+- Repeated contention sequences to check round-robin progress.
 
-### Backpressure and latency
-- Immediate handshake
-- Short stall and multi-cycle stall
-- Independently delayed target responses
-- Immediate versus delayed response acceptance
+### Timing and backpressure
+- Immediate handshake, short stall, and multi-cycle stall on AW/W/B/AR/R.
+- Independently delayed target responses.
+- Response backpressure while VALID is held high.
 
-### Responses and errors
-- Each supported response code
-- Normal completion versus target error
-- Response returned to matching master
-- Outstanding transaction count if implemented
+### Write behavior
+- AW before W and W held until the address is accepted.
+- Byte-strobe combinations: all lanes, individual lanes, and partial masks.
+- Response routing after delayed W/B phases.
 
-### Reset
-- Reset while idle
-- Reset during address handshake
-- Reset during write data
-- Reset while waiting for response
-- Reset with multiple outstanding requests if supported
+### Read behavior
+- Concurrent AR requests to one target.
+- Reads to both targets concurrently.
+- R response backpressure and stable response payload.
 
-## Meaningful cross coverage
+### Reset and errors
+- Reset while idle and while a transaction is outstanding.
+- Error response propagation if error injection is added to target models.
 
-- Master x target
-- Read/write x target
-- Arbitration outcome x contention
-- Target x response-delay bin
-- Traffic type x backpressure level
-- Reset phase x transaction state
-- Response code x target
+## Coverage closure process
 
-Avoid huge, mostly unreachable crosses that add little diagnostic value.
+1. Run the UVM test and save the simulator coverage report.
+2. Review uncovered bins and determine whether they represent missing stimulus, unreachable behavior, or an issue in the spec/design.
+3. Add directed sequences or refine random constraints.
+4. Document justified exclusions.
+5. Re-run and preserve the coverage report alongside the seed and simulator version.
 
-## Sampling and closure
-
-Sample meaningful events such as completed handshakes or transaction completion—not merely sequence requests. On uncovered bins, determine whether stimulus is missing, the bin is unreachable by specification, or a design/specification issue exists. Add directed tests or refine constraints as needed; document justified exclusions.
-
-Code coverage and functional coverage are complementary. Neither alone proves correctness.
+Functional coverage is a measure of exercised scenarios, not proof that the design is bug-free. Code coverage and functional coverage should be reviewed together where the simulator supports both.
